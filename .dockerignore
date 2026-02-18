@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual Environment
+venv/
+.env/
+.venv/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.pytest_cache/
+
+# PaddleOCR cache
+.PaddleOCR/
+inference/
+*.pdparams
+*.pdiparams
+
+# Claude
+.claude/
+
+# Test files
+test_invoice.png
+tests/test_*.py
+tests/conftest.py
+
+# Documentation
+README.md
+QUICKSTART.md
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
