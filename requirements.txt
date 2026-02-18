@@ -5,7 +5,7 @@ python-multipart==0.0.12
 
 --index-url https://www.paddlepaddle.org.cn/packages/stable/cpu/
 paddlepaddle==3.2.0
-Pillow==11.0.0
+Pillow==12.1.0
 opencv-python-headless==4.10.0.84
 
 openai==1.54.0
