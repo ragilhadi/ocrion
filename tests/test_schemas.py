@@ -1,4 +1,5 @@
 """Unit tests for Pydantic schemas."""
+
 import pytest
 from datetime import datetime
 from pydantic import ValidationError
@@ -9,7 +10,7 @@ from app.schemas.request import (
     LayoutBlock,
     ExtractionResponse,
     ErrorResponse,
-    HealthResponse
+    HealthResponse,
 )
 
 
@@ -21,7 +22,7 @@ class TestExtractionRequest:
         schema = {
             "invoice_number": "Invoice identifier",
             "total": "Total amount",
-            "date": "Invoice date"
+            "date": "Invoice date",
         }
 
         request = ExtractionRequest(schema_definition=schema)
@@ -99,9 +100,7 @@ class TestOCRResult:
     def test_valid_ocr_result(self):
         """Test valid OCR result creation."""
         result = OCRResult(
-            text="Sample text",
-            bbox=[10.0, 20.0, 100.0, 50.0],
-            confidence=0.95
+            text="Sample text", bbox=[10.0, 20.0, 100.0, 50.0], confidence=0.95
         )
 
         assert result.text == "Sample text"
@@ -111,36 +110,20 @@ class TestOCRResult:
     def test_confidence_out_of_range_high(self):
         """Test that confidence > 1.0 raises error."""
         with pytest.raises(ValidationError):
-            OCRResult(
-                text="Sample",
-                bbox=[0, 0, 10, 10],
-                confidence=1.5
-            )
+            OCRResult(text="Sample", bbox=[0, 0, 10, 10], confidence=1.5)
 
     def test_confidence_out_of_range_low(self):
         """Test that confidence < 0.0 raises error."""
         with pytest.raises(ValidationError):
-            OCRResult(
-                text="Sample",
-                bbox=[0, 0, 10, 10],
-                confidence=-0.1
-            )
+            OCRResult(text="Sample", bbox=[0, 0, 10, 10], confidence=-0.1)
 
     def test_confidence_boundary_values(self):
         """Test boundary confidence values."""
         # Should accept 0.0 and 1.0
-        result1 = OCRResult(
-            text="Sample",
-            bbox=[0, 0, 10, 10],
-            confidence=0.0
-        )
+        result1 = OCRResult(text="Sample", bbox=[0, 0, 10, 10], confidence=0.0)
         assert result1.confidence == 0.0
 
-        result2 = OCRResult(
-            text="Sample",
-            bbox=[0, 0, 10, 10],
-            confidence=1.0
-        )
+        result2 = OCRResult(text="Sample", bbox=[0, 0, 10, 10], confidence=1.0)
         assert result2.confidence == 1.0
 
 
@@ -150,10 +133,7 @@ class TestLayoutBlock:
     def test_valid_layout_block(self):
         """Test valid layout block creation."""
         block = LayoutBlock(
-            text="Sample text",
-            bbox=[10, 20, 100, 50],
-            page_num=1,
-            block_type="text"
+            text="Sample text", bbox=[10, 20, 100, 50], page_num=1, block_type="text"
         )
 
         assert block.text == "Sample text"
@@ -163,10 +143,7 @@ class TestLayoutBlock:
 
     def test_default_values(self):
         """Test default values for optional fields."""
-        block = LayoutBlock(
-            text="Sample",
-            bbox=[0, 0, 10, 10]
-        )
+        block = LayoutBlock(text="Sample", bbox=[0, 0, 10, 10])
 
         assert block.page_num == 1
         assert block.block_type == "text"
@@ -180,7 +157,7 @@ class TestExtractionResponse:
         response = ExtractionResponse(
             success=True,
             data={"field1": "value1", "field2": "value2"},
-            metadata={"processing_time": 1.5}
+            metadata={"processing_time": 1.5},
         )
 
         assert response.success is True
@@ -190,17 +167,13 @@ class TestExtractionResponse:
 
     def test_default_success(self):
         """Test that success defaults to True."""
-        response = ExtractionResponse(
-            data={"field": "value"}
-        )
+        response = ExtractionResponse(data={"field": "value"})
 
         assert response.success is True
 
     def test_default_metadata(self):
         """Test that metadata defaults to dict with timestamp."""
-        response = ExtractionResponse(
-            data={"field": "value"}
-        )
+        response = ExtractionResponse(data={"field": "value"})
 
         assert isinstance(response.metadata, dict)
         assert "timestamp" in response.metadata
@@ -214,9 +187,7 @@ class TestErrorResponse:
     def test_valid_error_response(self):
         """Test valid error response creation."""
         response = ErrorResponse(
-            success=False,
-            error="validation_error",
-            detail="Invalid input data"
+            success=False, error="validation_error", detail="Invalid input data"
         )
 
         assert response.success is False
@@ -228,19 +199,13 @@ class TestErrorResponse:
 
     def test_default_success(self):
         """Test that success defaults to False."""
-        response = ErrorResponse(
-            error="test_error",
-            detail="test detail"
-        )
+        response = ErrorResponse(error="test_error", detail="test detail")
 
         assert response.success is False
 
     def test_timestamp_format(self):
         """Test that timestamp is a valid ISO format string."""
-        response = ErrorResponse(
-            error="test",
-            detail="test"
-        )
+        response = ErrorResponse(error="test", detail="test")
 
         # Should not raise exception
         datetime.fromisoformat(response.timestamp)
@@ -257,7 +222,7 @@ class TestHealthResponse:
             version="1.0.0",
             model="test-model",
             ocr_gpu=False,
-            uptime_seconds=123.45
+            uptime_seconds=123.45,
         )
 
         assert response.status == "healthy"
@@ -269,10 +234,7 @@ class TestHealthResponse:
 
     def test_default_values(self):
         """Test default values for health response."""
-        response = HealthResponse(
-            model="test-model",
-            ocr_gpu=False
-        )
+        response = HealthResponse(model="test-model", ocr_gpu=False)
 
         assert response.status == "healthy"
         assert response.service == "ocrion"
@@ -281,15 +243,8 @@ class TestHealthResponse:
 
     def test_optional_uptime(self):
         """Test that uptime_seconds is optional."""
-        response1 = HealthResponse(
-            model="test",
-            ocr_gpu=False,
-            uptime_seconds=100.0
-        )
+        response1 = HealthResponse(model="test", ocr_gpu=False, uptime_seconds=100.0)
         assert response1.uptime_seconds == 100.0
 
-        response2 = HealthResponse(
-            model="test",
-            ocr_gpu=False
-        )
+        response2 = HealthResponse(model="test", ocr_gpu=False)
         assert response2.uptime_seconds is None

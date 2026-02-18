@@ -1,4 +1,5 @@
 """Tests for OCRion API."""
+
 import pytest
 import io
 from fastapi.testclient import TestClient
@@ -6,7 +7,6 @@ from PIL import Image
 from unittest.mock import patch, MagicMock
 
 from app.main import app
-from app.services.ocr_service import OCRService
 
 
 @pytest.fixture
@@ -18,16 +18,17 @@ def client():
 @pytest.fixture
 def sample_image():
     """Create a sample test image."""
-    img = Image.new('RGB', (800, 600), color='white')
+    img = Image.new("RGB", (800, 600), color="white")
     # Draw some text on the image
-    from PIL import ImageDraw, ImageFont
+    from PIL import ImageDraw
+
     draw = ImageDraw.Draw(img)
-    draw.text((50, 50), "Invoice Number: INV-2024-001", fill='black')
-    draw.text((50, 100), "Total: $1,234.56", fill='black')
-    draw.text((50, 150), "Date: 2024-01-15", fill='black')
+    draw.text((50, 50), "Invoice Number: INV-2024-001", fill="black")
+    draw.text((50, 100), "Total: $1,234.56", fill="black")
+    draw.text((50, 150), "Date: 2024-01-15", fill="black")
 
     img_bytes = io.BytesIO()
-    img.save(img_bytes, format='JPEG')
+    img.save(img_bytes, format="JPEG")
     img_bytes.seek(0)
     return img_bytes
 
@@ -59,17 +60,13 @@ class TestExtractionEndpoint:
 
     def test_extract_missing_file(self, client, sample_schema):
         """Test extraction without file returns 422."""
-        response = client.post(
-            "/extract",
-            data={"schema": sample_schema}
-        )
+        response = client.post("/extract", data={"schema": sample_schema})
         assert response.status_code == 422
 
     def test_extract_missing_schema(self, client, sample_image):
         """Test extraction without schema returns 422."""
         response = client.post(
-            "/extract",
-            files={"file": ("test.jpg", sample_image, "image/jpeg")}
+            "/extract", files={"file": ("test.jpg", sample_image, "image/jpeg")}
         )
         assert response.status_code == 422
 
@@ -79,7 +76,7 @@ class TestExtractionEndpoint:
         response = client.post(
             "/extract",
             files={"file": ("test.txt", invalid_file, "text/plain")},
-            data={"schema": sample_schema}
+            data={"schema": sample_schema},
         )
         assert response.status_code in [400, 422]
 
@@ -88,7 +85,7 @@ class TestExtractionEndpoint:
         response = client.post(
             "/extract",
             files={"file": ("test.jpg", sample_image, "image/jpeg")},
-            data={"schema": "{invalid json}"}
+            data={"schema": "{invalid json}"},
         )
         assert response.status_code == 400
 
@@ -98,7 +95,7 @@ class TestExtractionEndpoint:
         response = client.post(
             "/extract",
             files={"file": ("test.jpg", sample_image, "image/jpeg")},
-            data={"schema": '{"": "description"}'}
+            data={"schema": '{"": "description"}'},
         )
         assert response.status_code == 400
 
@@ -106,15 +103,10 @@ class TestExtractionEndpoint:
 class TestExtractionSuccess:
     """Tests for successful extraction flow."""
 
-    @patch('app.services.ocr_service.OCRService.extract_text')
-    @patch('app.services.llm_service.get_llm_service')
+    @patch("app.services.ocr_service.OCRService.extract_text")
+    @patch("app.services.llm_service.get_llm_service")
     def test_successful_extraction(
-        self,
-        mock_llm_service,
-        mock_ocr,
-        client,
-        sample_image,
-        sample_schema
+        self, mock_llm_service, mock_ocr, client, sample_image, sample_schema
     ):
         """Test successful extraction end-to-end."""
         from app.schemas.request import OCRResult
@@ -124,18 +116,12 @@ class TestExtractionSuccess:
             OCRResult(
                 text="Invoice Number: INV-2024-001",
                 bbox=[10, 10, 400, 40],
-                confidence=0.95
+                confidence=0.95,
             ),
+            OCRResult(text="Total: $1,234.56", bbox=[10, 50, 200, 80], confidence=0.92),
             OCRResult(
-                text="Total: $1,234.56",
-                bbox=[10, 50, 200, 80],
-                confidence=0.92
+                text="Date: 2024-01-15", bbox=[10, 90, 150, 120], confidence=0.94
             ),
-            OCRResult(
-                text="Date: 2024-01-15",
-                bbox=[10, 90, 150, 120],
-                confidence=0.94
-            )
         ]
 
         # Mock LLM service
@@ -144,13 +130,13 @@ class TestExtractionSuccess:
         mock_llm_instance.extract_with_retry.return_value = {
             "invoice_number": "INV-2024-001",
             "total": "1234.56",
-            "date": "2024-01-15"
+            "date": "2024-01-15",
         }
 
         response = client.post(
             "/extract",
             files={"file": ("test.jpg", sample_image, "image/jpeg")},
-            data={"schema": sample_schema}
+            data={"schema": sample_schema},
         )
 
         assert response.status_code == 200
@@ -174,7 +160,7 @@ class TestFileValidation:
         response = client.post(
             "/extract",
             files={"file": ("large.jpg", large_file, "image/jpeg")},
-            data={"schema": '{"field": "description"}'}
+            data={"schema": '{"field": "description"}'},
         )
 
         assert response.status_code == 400
@@ -189,7 +175,7 @@ class TestSchemaValidation:
         response = client.post(
             "/extract",
             files={"file": ("test.jpg", sample_image, "image/jpeg")},
-            data={"schema": '{}'}
+            data={"schema": "{}"},
         )
 
         assert response.status_code == 400
@@ -199,12 +185,13 @@ class TestSchemaValidation:
         # Create schema with 51 fields
         schema = {f"field_{i}": "description" for i in range(51)}
         import json
+
         schema_str = json.dumps(schema)
 
         response = client.post(
             "/extract",
             files={"file": ("test.jpg", sample_image, "image/jpeg")},
-            data={"schema": schema_str}
+            data={"schema": schema_str},
         )
 
         assert response.status_code == 400
@@ -223,7 +210,7 @@ class TestRealProcessing:
         response = client.post(
             "/extract",
             files={"file": ("test.jpg", sample_image, "image/jpeg")},
-            data={"schema": sample_schema}
+            data={"schema": sample_schema},
         )
 
         # Should process successfully

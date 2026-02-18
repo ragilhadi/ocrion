@@ -57,9 +57,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
         logger.info("All services initialized successfully")
         logger.info(f"Model: {settings.model_name}")
-        logger.info(
-            f"Max upload size: {settings.max_upload_size / 1024 / 1024:.2f}MB"
-        )
+        logger.info(f"Max upload size: {settings.max_upload_size / 1024 / 1024:.2f}MB")
         logger.info("=" * 60)
 
     except Exception as e:
@@ -181,6 +179,4 @@ async def root() -> dict[str, str | dict[str, str] | bool]:
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(
-        "app.main:app", host="0.0.0.0", port=settings.api_port, reload=True
-    )
+    uvicorn.run("app.main:app", host="0.0.0.0", port=settings.api_port, reload=True)

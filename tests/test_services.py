@@ -1,7 +1,7 @@
 """Unit tests for OCRion services."""
+
 import pytest
-import numpy as np
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 from PIL import Image
 
 from app.services.ocr_service import OCRService, OCRResult
@@ -13,11 +13,12 @@ from app.schemas.request import LayoutBlock
 class TestOCRService:
     """Tests for OCRService."""
 
-    @patch('app.services.ocr_service.PaddleOCR')
+    @patch("app.services.ocr_service.PaddleOCR")
     def test_singleton_initialization(self, mock_paddleocr):
         """Test that OCR service uses singleton pattern."""
         # Reset the singleton
         import app.services.ocr_service as ocr_module
+
         ocr_module._ocr_instance.initialized = False
 
         mock_instance = Mock()
@@ -31,11 +32,12 @@ class TestOCRService:
         service2 = OCRService.get_instance()
         assert service1 == service2
 
-    @patch('app.services.ocr_service.PaddleOCR')
+    @patch("app.services.ocr_service.PaddleOCR")
     def test_extract_text_success(self, mock_paddleocr):
         """Test successful text extraction."""
         # Reset singleton
         import app.services.ocr_service as ocr_module
+
         ocr_module._ocr_instance.initialized = False
         ocr_module._ocr_instance.instance = None
 
@@ -46,13 +48,13 @@ class TestOCRService:
             [
                 [
                     [[10, 20], [200, 20], [200, 40], [10, 40]],  # bbox
-                    ("Sample Text", 0.95)  # (text, confidence)
+                    ("Sample Text", 0.95),  # (text, confidence)
                 ]
             ]
         ]
 
         # Create test image
-        img = Image.new('RGB', (800, 600), color='white')
+        img = Image.new("RGB", (800, 600), color="white")
 
         # Extract text
         results = OCRService.extract_text(img)
@@ -63,11 +65,12 @@ class TestOCRService:
         assert results[0].confidence == 0.95
         assert results[0].bbox == [10.0, 20.0, 200.0, 40.0]
 
-    @patch('app.services.ocr_service.PaddleOCR')
+    @patch("app.services.ocr_service.PaddleOCR")
     def test_extract_text_no_detection(self, mock_paddleocr):
         """Test OCR when no text is detected."""
         # Reset singleton
         import app.services.ocr_service as ocr_module
+
         ocr_module._ocr_instance.initialized = False
         ocr_module._ocr_instance.instance = None
 
@@ -75,17 +78,18 @@ class TestOCRService:
         mock_paddleocr.return_value = mock_ocr
         mock_ocr.ocr.return_value = None
 
-        img = Image.new('RGB', (800, 600), color='white')
+        img = Image.new("RGB", (800, 600), color="white")
 
         results = OCRService.extract_text(img)
 
         assert results == []
 
-    @patch('app.services.ocr_service.PaddleOCR')
+    @patch("app.services.ocr_service.PaddleOCR")
     def test_extract_text_empty_result(self, mock_paddleocr):
         """Test OCR when result is empty list."""
         # Reset singleton
         import app.services.ocr_service as ocr_module
+
         ocr_module._ocr_instance.initialized = False
         ocr_module._ocr_instance.instance = None
 
@@ -93,7 +97,7 @@ class TestOCRService:
         mock_paddleocr.return_value = mock_ocr
         mock_ocr.ocr.return_value = [[]]
 
-        img = Image.new('RGB', (800, 600), color='white')
+        img = Image.new("RGB", (800, 600), color="white")
 
         results = OCRService.extract_text(img)
 
@@ -110,9 +114,7 @@ class TestLayoutService:
 
     def test_order_blocks_single(self):
         """Test layout ordering with single block."""
-        ocr_results = [
-            OCRResult(text="Hello", bbox=[10, 10, 100, 30], confidence=0.95)
-        ]
+        ocr_results = [OCRResult(text="Hello", bbox=[10, 10, 100, 30], confidence=0.95)]
 
         results = LayoutService.order_blocks(ocr_results, 800, 600)
 
@@ -157,8 +159,12 @@ class TestLayoutService:
     def test_combine_text_single_line(self):
         """Test text combination with single line."""
         blocks = [
-            LayoutBlock(text="Hello", bbox=[0, 0, 100, 20], page_num=1, block_type="text"),
-            LayoutBlock(text="World", bbox=[110, 0, 200, 20], page_num=1, block_type="text"),
+            LayoutBlock(
+                text="Hello", bbox=[0, 0, 100, 20], page_num=1, block_type="text"
+            ),
+            LayoutBlock(
+                text="World", bbox=[110, 0, 200, 20], page_num=1, block_type="text"
+            ),
         ]
 
         result = LayoutService.combine_text(blocks)
@@ -168,10 +174,18 @@ class TestLayoutService:
     def test_combine_text_multiple_lines(self):
         """Test text combination with multiple lines."""
         blocks = [
-            LayoutBlock(text="Line", bbox=[0, 0, 100, 20], page_num=1, block_type="text"),
-            LayoutBlock(text="1", bbox=[110, 0, 200, 20], page_num=1, block_type="text"),
-            LayoutBlock(text="Line", bbox=[0, 50, 100, 70], page_num=1, block_type="text"),
-            LayoutBlock(text="2", bbox=[110, 50, 200, 70], page_num=1, block_type="text"),
+            LayoutBlock(
+                text="Line", bbox=[0, 0, 100, 20], page_num=1, block_type="text"
+            ),
+            LayoutBlock(
+                text="1", bbox=[110, 0, 200, 20], page_num=1, block_type="text"
+            ),
+            LayoutBlock(
+                text="Line", bbox=[0, 50, 100, 70], page_num=1, block_type="text"
+            ),
+            LayoutBlock(
+                text="2", bbox=[110, 50, 200, 70], page_num=1, block_type="text"
+            ),
         ]
 
         result = LayoutService.combine_text(blocks)
@@ -185,10 +199,7 @@ class TestPromptBuilder:
 
     def test_build_standard_prompt(self):
         """Test standard prompt building."""
-        schema = {
-            "invoice_number": "Invoice identifier",
-            "total": "Total amount"
-        }
+        schema = {"invoice_number": "Invoice identifier", "total": "Total amount"}
         text = "Invoice #123 Total: $500"
 
         prompt = PromptBuilder.build_extraction_prompt(schema, text, strict=False)
@@ -211,10 +222,7 @@ class TestPromptBuilder:
 
     def test_format_schema_for_prompt(self):
         """Test schema formatting."""
-        schema = {
-            "invoice_number": "Invoice ID",
-            "total": "Total amount"
-        }
+        schema = {"invoice_number": "Invoice ID", "total": "Total amount"}
 
         result = PromptBuilder.format_schema_for_prompt(schema)
 
@@ -239,10 +247,11 @@ class TestLLMService:
 
     def test_singleton(self):
         """Test LLM service singleton pattern."""
-        from app.services.llm_service import get_llm_service, _llm_service
+        from app.services.llm_service import get_llm_service
 
         # Reset singleton
         import app.services.llm_service as llm_module
+
         llm_module._llm_service = None
 
         service1 = get_llm_service()
@@ -336,12 +345,9 @@ class TestFileValidator:
         # Should pass size check (may fail mime check)
         assert "exceeds maximum" not in (error or "")
 
-    @pytest.mark.parametrize("mime_type", [
-        "application/pdf",
-        "image/jpeg",
-        "image/jpg",
-        "image/png"
-    ])
+    @pytest.mark.parametrize(
+        "mime_type", ["application/pdf", "image/jpeg", "image/jpg", "image/png"]
+    )
     def test_allowed_mime_types(self, mime_type):
         """Test that allowed MIME types pass."""
         from app.utils.validators import FileValidator

@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     All settings can be configured via environment variables or .env file.
     Environment variable names are case-insensitive.
     """
+
     openrouter_api_key: str = Field(
         ...,
         description="OpenRouter API key for LLM access",
@@ -76,5 +77,6 @@ class Settings(BaseSettings):
             msg = "OPENROUTER_API_KEY must be set in environment or .env file"
             raise ValueError(msg)
         return v
+
 
 settings = Settings()

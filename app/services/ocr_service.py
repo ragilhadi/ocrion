@@ -11,7 +11,6 @@ import numpy as np
 from paddleocr import PaddleOCR
 from PIL import Image
 
-from app.config import settings
 from app.schemas.request import OCRResult
 
 logger = logging.getLogger(__name__)
@@ -37,9 +36,7 @@ class _OCRInstance:
             return
 
         try:
-            logger.info(
-                f"Initializing PaddleOCR "
-            )
+            logger.info("Initializing PaddleOCR ")
             self.instance = PaddleOCR(
                 lang="en",
                 text_detection_model_name="PP-OCRv5_mobile_det",

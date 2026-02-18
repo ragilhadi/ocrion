@@ -1,13 +1,13 @@
 """Gunicorn configuration for OCRion API."""
-import multiprocessing
+
 import os
 
 # Server socket
 bind = f"0.0.0.0:{os.getenv('API_PORT', '8000')}"
 
 # Worker processes
-workers = int(os.getenv('WORKERS', '4'))
-worker_class = 'uvicorn.workers.UvicornWorker'
+workers = int(os.getenv("WORKERS", "4"))
+worker_class = "uvicorn.workers.UvicornWorker"
 worker_connections = 1000
 
 # Timeout settings
@@ -15,12 +15,12 @@ timeout = 120
 keepalive = 5
 
 # Process naming
-proc_name = 'ocrion'
+proc_name = "ocrion"
 
 # Logging
-accesslog = '-'
-errorlog = '-'
-loglevel = 'info'
+accesslog = "-"
+errorlog = "-"
+loglevel = "info"
 
 # Server mechanics
 daemon = False
@@ -43,6 +43,7 @@ certfile = None
 
 # Preload app for faster workers (may not work with all apps)
 preload_app = False
+
 
 # Server hooks
 def on_starting(server):

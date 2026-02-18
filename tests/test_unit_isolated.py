@@ -1,6 +1,6 @@
 """Isolated unit tests that don't require system dependencies."""
+
 import pytest
-from datetime import datetime
 from pydantic import ValidationError
 
 
@@ -14,7 +14,7 @@ class TestSchemaValidations:
         schema = {
             "invoice_number": "Invoice identifier",
             "total": "Total amount",
-            "date": "Invoice date"
+            "date": "Invoice date",
         }
 
         request = ExtractionRequest(schema_definition=schema)
@@ -48,9 +48,7 @@ class TestSchemaValidations:
         from app.schemas.request import OCRResult
 
         result = OCRResult(
-            text="Sample text",
-            bbox=[10.0, 20.0, 100.0, 50.0],
-            confidence=0.95
+            text="Sample text", bbox=[10.0, 20.0, 100.0, 50.0], confidence=0.95
         )
 
         assert result.text == "Sample text"
@@ -85,9 +83,7 @@ class TestSchemaValidations:
         """Test ExtractionResponse default values."""
         from app.schemas.request import ExtractionResponse
 
-        response = ExtractionResponse(
-            data={"field1": "value1"}
-        )
+        response = ExtractionResponse(data={"field1": "value1"})
 
         assert response.success is True
         # The model_validator should have added timestamp
@@ -98,10 +94,7 @@ class TestSchemaValidations:
         """Test ErrorResponse default values."""
         from app.schemas.request import ErrorResponse
 
-        response = ErrorResponse(
-            error="test_error",
-            detail="test detail"
-        )
+        response = ErrorResponse(error="test_error", detail="test detail")
 
         assert response.success is False
         # timestamp is a string field that gets auto-populated
@@ -112,10 +105,7 @@ class TestSchemaValidations:
         """Test HealthResponse default values."""
         from app.schemas.request import HealthResponse
 
-        response = HealthResponse(
-            model="test-model",
-            ocr_gpu=False
-        )
+        response = HealthResponse(model="test-model", ocr_gpu=False)
 
         assert response.status == "healthy"
         assert response.service == "ocrion"
@@ -128,15 +118,15 @@ class TestConfigSettings:
 
     def test_settings_defaults(self):
         """Test default settings values."""
-        from app.config import Settings, Field
+        from app.config import Settings
         import os
 
         # Set test environment
-        os.environ['OPENROUTER_API_KEY'] = 'test_key_12345'
+        os.environ["OPENROUTER_API_KEY"] = "test_key_12345"
 
         settings = Settings()
 
-        assert settings.openrouter_api_key == 'test_key_12345'
+        assert settings.openrouter_api_key == "test_key_12345"
         assert settings.max_tokens == 4096
         assert settings.api_port == 8000
         assert settings.workers == 4
@@ -146,7 +136,6 @@ class TestConfigSettings:
     def test_settings_validation(self):
         """Test settings validation."""
         from app.config import Settings
-        import os
 
         # Test invalid port
         with pytest.raises(ValidationError):
@@ -190,10 +179,7 @@ class TestPromptBuilder:
         """Test schema formatting."""
         from app.services.prompt_builder import PromptBuilder
 
-        schema = {
-            "invoice_number": "Invoice ID",
-            "total": "Total amount"
-        }
+        schema = {"invoice_number": "Invoice ID", "total": "Total amount"}
 
         result = PromptBuilder.format_schema_for_prompt(schema)
 
@@ -211,7 +197,7 @@ class TestLLMServiceValidation:
         from app.config import settings
         import os
 
-        os.environ['OPENROUTER_API_KEY'] = 'test_key'
+        os.environ["OPENROUTER_API_KEY"] = "test_key"
 
         service = LLMService()
 
@@ -272,7 +258,6 @@ class TestLayoutService:
     def test_order_blocks_empty(self):
         """Test layout ordering with empty results."""
         from app.services.layout_service import LayoutService
-        from app.schemas.request import OCRResult
 
         results = LayoutService.order_blocks([], 800, 600)
 
@@ -328,8 +313,12 @@ class TestLayoutService:
         from app.schemas.request import LayoutBlock
 
         blocks = [
-            LayoutBlock(text="Hello", bbox=[0, 0, 100, 20], page_num=1, block_type="text"),
-            LayoutBlock(text="World", bbox=[110, 0, 200, 20], page_num=1, block_type="text"),
+            LayoutBlock(
+                text="Hello", bbox=[0, 0, 100, 20], page_num=1, block_type="text"
+            ),
+            LayoutBlock(
+                text="World", bbox=[110, 0, 200, 20], page_num=1, block_type="text"
+            ),
         ]
 
         result = LayoutService.combine_text(blocks)
@@ -342,10 +331,18 @@ class TestLayoutService:
         from app.schemas.request import LayoutBlock
 
         blocks = [
-            LayoutBlock(text="Line", bbox=[0, 0, 100, 20], page_num=1, block_type="text"),
-            LayoutBlock(text="1", bbox=[110, 0, 200, 20], page_num=1, block_type="text"),
-            LayoutBlock(text="Line", bbox=[0, 50, 100, 70], page_num=1, block_type="text"),
-            LayoutBlock(text="2", bbox=[110, 50, 200, 70], page_num=1, block_type="text"),
+            LayoutBlock(
+                text="Line", bbox=[0, 0, 100, 20], page_num=1, block_type="text"
+            ),
+            LayoutBlock(
+                text="1", bbox=[110, 0, 200, 20], page_num=1, block_type="text"
+            ),
+            LayoutBlock(
+                text="Line", bbox=[0, 50, 100, 70], page_num=1, block_type="text"
+            ),
+            LayoutBlock(
+                text="2", bbox=[110, 50, 200, 70], page_num=1, block_type="text"
+            ),
         ]
 
         result = LayoutService.combine_text(blocks)

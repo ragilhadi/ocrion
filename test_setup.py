@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Quick validation script to check if all dependencies can be imported."""
+
+import os
 import sys
+from importlib.util import find_spec
 
 print("Checking Python imports...")
 print("-" * 50)
@@ -8,46 +11,40 @@ print("-" * 50)
 checks = []
 
 # Check FastAPI
-try:
-    from fastapi import FastAPI
+if find_spec("fastapi") is not None:
     checks.append(("FastAPI", True))
-except ImportError as e:
-    checks.append(("FastAPI", False, str(e)))
+else:
+    checks.append(("FastAPI", False, "Module not found"))
 
 # Check Pydantic
-try:
-    from pydantic import BaseModel
+if find_spec("pydantic") is not None:
     checks.append(("Pydantic", True))
-except ImportError as e:
-    checks.append(("Pydantic", False, str(e)))
+else:
+    checks.append(("Pydantic", False, "Module not found"))
 
 # Check PaddleOCR
-try:
-    from paddleocr import PaddleOCR
+if find_spec("paddleocr") is not None:
     checks.append(("PaddleOCR", True))
-except ImportError as e:
-    checks.append(("PaddleOCR", False, str(e)))
+else:
+    checks.append(("PaddleOCR", False, "Module not found"))
 
 # Check OpenAI
-try:
-    from openai import OpenAI
+if find_spec("openai") is not None:
     checks.append(("OpenAI", True))
-except ImportError as e:
-    checks.append(("OpenAI", False, str(e)))
+else:
+    checks.append(("OpenAI", False, "Module not found"))
 
 # Check PIL
-try:
-    from PIL import Image
+if find_spec("PIL") is not None:
     checks.append(("Pillow", True))
-except ImportError as e:
-    checks.append(("Pillow", False, str(e)))
+else:
+    checks.append(("Pillow", False, "Module not found"))
 
 # Check python-magic
-try:
-    import magic
+if find_spec("magic") is not None:
     checks.append(("python-magic", True))
-except ImportError as e:
-    checks.append(("python-magic", False, str(e)))
+else:
+    checks.append(("python-magic", False, "Module not found"))
 
 # Print results
 for check in checks:
@@ -69,9 +66,15 @@ app_checks = [
     ("app.config", "from app.config import settings"),
     ("app.schemas.request", "from app.schemas.request import ExtractionRequest"),
     ("app.services.ocr_service", "from app.services.ocr_service import OCRService"),
-    ("app.services.layout_service", "from app.services.layout_service import LayoutService"),
+    (
+        "app.services.layout_service",
+        "from app.services.layout_service import LayoutService",
+    ),
     ("app.services.llm_service", "from app.services.llm_service import LLMService"),
-    ("app.services.prompt_builder", "from app.services.prompt_builder import PromptBuilder"),
+    (
+        "app.services.prompt_builder",
+        "from app.services.prompt_builder import PromptBuilder",
+    ),
     ("app.utils.validators", "from app.utils.validators import FileValidator"),
     ("app.api.routes", "from app.api.routes import router"),
     ("app.main", "from app.main import app"),
@@ -90,13 +93,11 @@ print("-" * 50)
 print("\nChecking environment...")
 print("-" * 50)
 
-import os
 env_vars = ["OPENROUTER_API_KEY", "MODEL_NAME", "API_PORT", "OCR_USE_GPU"]
 
 for var in env_vars:
     value = os.getenv(var)
     if value:
-        # Mask API keys
         if "KEY" in var or "SECRET" in var:
             display = f"{value[:8]}...{value[-4:]}" if len(value) > 12 else "***"
         else:

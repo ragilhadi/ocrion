@@ -122,6 +122,4 @@ class HealthResponse(BaseModel):
     version: str = Field(default="1.0.0", description="API version")
     model: str = Field(..., description="LLM model in use")
     ocr_gpu: bool = Field(..., description="Whether OCR is using GPU acceleration")
-    uptime_seconds: float | None = Field(
-        None, description="Server uptime in seconds"
-    )
+    uptime_seconds: float | None = Field(None, description="Server uptime in seconds")
